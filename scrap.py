@@ -34,8 +34,12 @@ time.sleep(5)
 #saber si en el primer tiempo hubo goles
 golesPrimerTiempoLocal = driver.find_element_by_class_name('p1_home')
 golesPrimerTiempoVisitante = driver.find_element_by_class_name('p1_away')
-print('Resultado primera parte:'+golesPrimerTiempoLocal+'-'+golesPrimerTiempoVisitante)
-print(golesPrimerTiempoLocal.text)
+print('Resultado primera parte:'+golesPrimerTiempoLocal.text+'-'+golesPrimerTiempoVisitante.text)
+time.sleep(5)
+if int(golesPrimerTiempoLocal.text)>0 or int(golesPrimerTiempoVisitante.text)>0:
+    print ("Hubo goles en el primer tiempo")
+else:
+    print ("No Hubo goles en el primer tiempo")
 estadisticas = driver.find_element_by_id('a-match-statistics')
 estadisticas.click()
 time.sleep(5)
