@@ -10,6 +10,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from termcolor import colored
 from datetime import date
 import time
+from datetime import datetime
 
 
 mydb = mysql.connector.connect(
@@ -281,10 +282,14 @@ def start(update, context):
     '<b>RESULTADO FINAL:</b>'+str(golesTotalesLocal)+'-'+str(golesTotalesVisitante)
     ,parse_mode='HTML')
     # Hago el insert del partido en la BD para almacenarlo
+    fechaPartido = fecha.text;
+    fechaPartido = fechaPartido.replace(".", "-")
+    date_time_obj = datetime.strptime(fechaPartido+':00.00', '%d-%m-%Y %H:%M:%S.%f')
+    print('Date:', date_time_obj.date())
     mycursor = mydb.cursor()
     sql = "INSERT INTO partidos (league,event,local_team,away_team,shots_on_target_local_FH,shots_on_target_away_FH,dangerous_attack_home_FH,dangerous_attack_away_FH,result_FH,shots_on_target_local_SH,shots_on_target_away_SH,dangerous_attack_home_SH,dangerous_attack_away_SH,result_SH,result,date) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     val = (liga.text,equipos[0].text+'-'+equipos[1].text,equipos[0].text,equipos[1].text,separacionRemates[0],separacionRemates[2],separacionAtaquesPeligrosos[0],separacionAtaquesPeligrosos[2],str(golesPrimerTiempoLocal)+'-'+str(golesPrimerTiempoVisitante)
-    ,separacionRematesSegunda[0],separacionRematesSegunda[2],separacionAtaquesPeligrososSegunda[0],separacionAtaquesPeligrososSegunda[2],str(golesSegundoTiempoLocal)+'-'+str(golesSegundoTiempoVisitante),str(golesTotalesLocal)+'-'+str(golesTotalesVisitante),fecha.text)
+    ,separacionRematesSegunda[0],separacionRematesSegunda[2],separacionAtaquesPeligrososSegunda[0],separacionAtaquesPeligrososSegunda[2],str(golesSegundoTiempoLocal)+'-'+str(golesSegundoTiempoVisitante),str(golesTotalesLocal)+'-'+str(golesTotalesVisitante),date_time_obj.date())
     mycursor.execute(sql, val)
 
     mydb.commit()
