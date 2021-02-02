@@ -11,7 +11,7 @@ from termcolor import colored
 from datetime import date
 import time
 from datetime import datetime
-
+import pymongo
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -161,141 +161,207 @@ def start(update, context):
     ayer=driver.find_element_by_class_name('calendar__direction--yesterday')
     ayer.click()
     time.sleep(1)
-    pepe=driver.find_element_by_class_name('event__scores')
-    pepe.click()
-    time.sleep(1)
-    window_after = driver.window_handles[1]
-#cambio de ventana y le hago click a estadisticas
-    driver.switch_to_window(window_after)
-#saber en que liga estamos
-    liga=driver.find_element_by_class_name('description__country')
-    print('Partido de la liga'+liga.text)
-#fecha en la que se jugó
-    fecha=driver.find_element_by_class_name('description__time')
-    print(fecha.text)
-#saber que equipos jugaron
-    equipos=driver.find_elements_by_class_name('tname__text')
-    print('Partido entre'+ equipos[0].text +' VS '+ equipos[1].text)
-    time.sleep(1)
-#saber si en el primer tiempo hubo goles
-    global golesPrimerTiempoLocal
-    golesPrimerTiempoLocal = driver.find_element_by_class_name('p1_home').text
-    golesPrimerTiempoLocal=int(golesPrimerTiempoLocal)
-    golesPrimerTiempoVisitante = driver.find_element_by_class_name('p1_away').text
-    golesPrimerTiempoVisitante=int(golesPrimerTiempoVisitante)
-# print(type(golesPrimerTiempoLocal))
-# print(f'Resultado primera parte:{golesPrimerTiempoLocal} - {golesPrimerTiempoVisitante}')
-    print(f"Resultado primera parte: {golesPrimerTiempoLocal} - {golesPrimerTiempoVisitante}")
-    time.sleep(1)
-    if golesPrimerTiempoLocal>0 or golesPrimerTiempoVisitante>0:
-    # print ("hubo goles en la primera parte")
-    # golestotalesHT=int(golesPrimerTiempoLocal.text)+int(golesPrimerTiempoVisitante.text)
-    # if golestotalesHT == 1:
-    #   saberminPrimergol = driver.find_element_by_class_name('time-box')
-    #   print('Gol en el min'+saberminPrimergol.text)
-    # else:
-    #     saberminPrimergol = driver.find_elements_by_class_name('time-box')
-        estadisticas = driver.find_element_by_id('a-match-statistics')
-        estadisticas.click()
+    pepe=driver.find_elements_by_xpath("//*[contains(@id,'g_1_')]")
+    time.sleep(3)
+    for holi in pepe:
+        time.sleep(3)
+        # update.message.reply_text(holi.text)
+        holi.click()
+        time.sleep(3)
+        window_after = driver.window_handles[1]
+    #cambio de ventana y le hago click a estadisticas
+        driver.switch_to_window(window_after)
+    #saber en que liga estamos
+        liga=driver.find_element_by_class_name('description__country')
+        print('Partido de la liga'+liga.text)
+    #fecha en la que se jugó
+        fecha=driver.find_element_by_class_name('description__time')
+        print(fecha.text)
+    #saber que equipos jugaron
+        equipos=driver.find_elements_by_class_name('tname__text')
+        print('Partido entre'+ equipos[0].text +' VS '+ equipos[1].text)
         time.sleep(1)
+    #saber si en el primer tiempo hubo goles
+        global golesPrimerTiempoLocal
+        golesPrimerTiempoLocal = driver.find_element_by_class_name('p1_home').text
+        golesPrimerTiempoLocal=int(golesPrimerTiempoLocal)
+        golesPrimerTiempoVisitante = driver.find_element_by_class_name('p1_away').text
+        golesPrimerTiempoVisitante=int(golesPrimerTiempoVisitante)
+    # print(type(golesPrimerTiempoLocal))
+    # print(f'Resultado primera parte:{golesPrimerTiempoLocal} - {golesPrimerTiempoVisitante}')
+        print(f"Resultado primera parte: {golesPrimerTiempoLocal} - {golesPrimerTiempoVisitante}")
+        time.sleep(1)
+        if golesPrimerTiempoLocal>0 or golesPrimerTiempoVisitante>0:
+        # print ("hubo goles en la primera parte")
+        # golestotalesHT=int(golesPrimerTiempoLocal.text)+int(golesPrimerTiempoVisitante.text)
+        # if golestotalesHT == 1:
+        #   saberminPrimergol = driver.find_element_by_class_name('time-box')
+        #   print('Gol en el min'+saberminPrimergol.text)
+        # else:
+        #     saberminPrimergol = driver.find_elements_by_class_name('time-box')
+            estadisticas = driver.find_element_by_id('a-match-statistics')
+            estadisticas.click()
+            time.sleep(1)
+        #hacerle click al primer tiempo 
+            estadisticasPrimerTiempo = driver.find_element_by_id('statistics-1-statistic')
+            estadisticasPrimerTiempo.click()
+            time.sleep(1)
+        #hay que recorrer todas las estadisticas para obtener tiros a puerta y ataques peligrosos
+            bucledeinfoprimeraparte=driver.find_elements_by_xpath("//div[@class='statTextGroup']")
+            bucledeinfoprimeraparte1= driver.find_elements_by_xpath("//div[@class='statRow']/div[@class='statTextGroup']")
+            for x in bucledeinfoprimeraparte1:
+                rematesapuertaprimeraparte = "Remates a puerta"
+                ataquespeligrososprimeraparte = "Ataques peligrosos"
+                if rematesapuertaprimeraparte in x.text:
+                    rematesapuertaprimeraparteseparadosporocoma = x.text.replace("\n", ",")
+                    separacionRemates = rematesapuertaprimeraparteseparadosporocoma.split(",")
+                    print('Remates a puerta HT Local:'+separacionRemates[0])
+                    print('Remates a puerta HT Visitante:'+separacionRemates[2])
+                if ataquespeligrososprimeraparte in x.text :
+                    ataquespeligrososparteseparadosporocoma = x.text.replace("\n", ",")
+                    separacionAtaquesPeligrosos = ataquespeligrososparteseparadosporocoma.split(",")
+                    print('Ataques peligrosos HT Local:'+separacionAtaquesPeligrosos[0])
+                    print('Ataques peligrosos HT Visitante:'+separacionAtaquesPeligrosos[2])
+        else:
+            estadisticas = driver.find_element_by_id('a-match-statistics')
+            estadisticas.click()
+            time.sleep(1)
+        #hacerle click al primer tiempo 
+            estadisticasPrimerTiempo = driver.find_element_by_id('statistics-1-statistic')
+            estadisticasPrimerTiempo.click()
+            time.sleep(1)
+        #hay que recorrer todas las estadisticas para obtener tiros a puerta y ataques peligrosos
+            bucledeinfoprimeraparte=driver.find_elements_by_xpath("//div[@class='statTextGroup']")
+            bucledeinfoprimeraparte1= driver.find_elements_by_xpath("//div[@class='statRow']/div[@class='statTextGroup']")
+            for x in bucledeinfoprimeraparte1:
+                rematesapuertaprimeraparte = "Remates a puerta"
+                ataquespeligrososprimeraparte = "Ataques peligrosos"
+                if rematesapuertaprimeraparte in x.text:
+                    rematesapuertaprimeraparteseparadosporocoma = x.text.replace("\n", ",")
+                    separacionRemates = rematesapuertaprimeraparteseparadosporocoma.split(",")
+                    print('Remates a puerta HT Local:'+separacionRemates[0])
+                    print('Remates a puerta HT Visitante:'+separacionRemates[2])
+                if ataquespeligrososprimeraparte in x.text :
+                    ataquespeligrososparteseparadosporocoma = x.text.replace("\n", ",")
+                    separacionAtaquesPeligrosos = ataquespeligrososparteseparadosporocoma.split(",")
+                    print('Ataques peligrosos HT Local:'+separacionAtaquesPeligrosos[0])
+                    print('Ataques peligrosos HT Visitante:'+separacionAtaquesPeligrosos[2])
+        time.sleep(1)
+    #---------pasamos al segundo tiempo--------
     #hacerle click al primer tiempo 
-        estadisticasPrimerTiempo = driver.find_element_by_id('statistics-1-statistic')
-        estadisticasPrimerTiempo.click()
+        vueltaAtrasPartido = driver.find_element_by_id('a-match-timeline')
+        vueltaAtrasPartido.click()
         time.sleep(1)
-    #hay que recorrer todas las estadisticas para obtener tiros a puerta y ataques peligrosos
-        bucledeinfoprimeraparte=driver.find_elements_by_xpath("//div[@class='statTextGroup']")
-        bucledeinfoprimeraparte1= driver.find_elements_by_xpath("//div[@class='statRow']/div[@class='statTextGroup']")
-        for x in bucledeinfoprimeraparte1:
-            rematesapuertaprimeraparte = "Remates a puerta"
-            ataquespeligrososprimeraparte = "Ataques peligrosos"
-            if rematesapuertaprimeraparte in x.text:
-                rematesapuertaprimeraparteseparadosporocoma = x.text.replace("\n", ",")
-                separacionRemates = rematesapuertaprimeraparteseparadosporocoma.split(",")
-                print('Remates a puerta HT Local:'+separacionRemates[0])
-                print('Remates a puerta HT Visitante:'+separacionRemates[2])
-            if ataquespeligrososprimeraparte in x.text :
-                ataquespeligrososparteseparadosporocoma = x.text.replace("\n", ",")
-                separacionAtaquesPeligrosos = ataquespeligrososparteseparadosporocoma.split(",")
-                print('Ataques peligrosos HT Local:'+separacionAtaquesPeligrosos[0])
-                print('Ataques peligrosos HT Visitante:'+separacionAtaquesPeligrosos[2])
-    else:
-        print ("No Hubo goles en el primer tiempo")
-        update.message.reply_text("No hubo goles en el primer tiempo")
-    time.sleep(1)
-#---------pasamos al segundo tiempo--------
-#hacerle click al primer tiempo 
-    vueltaAtrasPartido = driver.find_element_by_id('a-match-timeline')
-    vueltaAtrasPartido.click()
-    time.sleep(1)
-    golesSegundoTiempoLocal = driver.find_element_by_class_name('p2_home').text
-    golesSegundoTiempoLocal=int(golesSegundoTiempoLocal)
-    golesSegundoTiempoVisitante = driver.find_element_by_class_name('p2_away').text
-    golesSegundoTiempoVisitante=int(golesSegundoTiempoVisitante)
-    print(f"Resultado segunda parte: {golesSegundoTiempoLocal} - {golesSegundoTiempoVisitante}")
-    time.sleep(1)
-    if golesSegundoTiempoLocal>0 or golesSegundoTiempoVisitante>0:
-        estadisticas = driver.find_element_by_id('a-match-statistics')
-        estadisticas.click()
+        golesSegundoTiempoLocal = driver.find_element_by_class_name('p2_home').text
+        golesSegundoTiempoLocal=int(golesSegundoTiempoLocal)
+        golesSegundoTiempoVisitante = driver.find_element_by_class_name('p2_away').text
+        golesSegundoTiempoVisitante=int(golesSegundoTiempoVisitante)
+        print(f"Resultado segunda parte: {golesSegundoTiempoLocal} - {golesSegundoTiempoVisitante}")
         time.sleep(1)
-    #hacerle click al segundo tiempo 
-        estadisticasPrimerTiempo = driver.find_element_by_id('statistics-2-statistic')
-        estadisticasPrimerTiempo.click()
-        time.sleep(1)
-    #hay que recorrer todas las estadisticas para obtener tiros a puerta y ataques peligrosos de la segunda parte
-        bucledeinfosegundaparte=driver.find_elements_by_xpath("//div[@class='statTextGroup']")
-        bucledeinfosegundaparte1= driver.find_elements_by_xpath("//div[@class='statRow']/div[@class='statTextGroup']")
-        for x in bucledeinfosegundaparte1:
-            rematesapuertaSegundaparte = "Remates a puerta"
-            ataquespeligrososSegundaparte = "Ataques peligrosos"
-            if rematesapuertaSegundaparte in x.text:
-                rematesapuertaSegundaparteseparadosporocoma = x.text.replace("\n", ",")
-                separacionRematesSegunda = rematesapuertaSegundaparteseparadosporocoma.split(",")
-                print('Remates a puerta ST Local:'+separacionRematesSegunda[0])
+        if golesSegundoTiempoLocal>0 or golesSegundoTiempoVisitante>0:
+            estadisticas = driver.find_element_by_id('a-match-statistics')
+            estadisticas.click()
+            time.sleep(1)
+            #hacerle click al segundo tiempo 
+            estadisticasPrimerTiempo = driver.find_element_by_id('statistics-2-statistic')
+            estadisticasPrimerTiempo.click()
+            time.sleep(1)
+            #hay que recorrer todas las estadisticas para obtener tiros a puerta y ataques peligrosos de la segunda parte
+            bucledeinfosegundaparte=driver.find_elements_by_xpath("//div[@class='statTextGroup']")
+            bucledeinfosegundaparte1= driver.find_elements_by_xpath("//div[@class='statRow']/div[@class='statTextGroup']")
+            for x in bucledeinfosegundaparte1:
+                rematesapuertaSegundaparte = "Remates a puerta"
+                ataquespeligrososSegundaparte = "Ataques peligrosos"
+                if rematesapuertaSegundaparte in x.text:
+                    rematesapuertaSegundaparteseparadosporocoma = x.text.replace("\n", ",")
+                    separacionRematesSegunda = rematesapuertaSegundaparteseparadosporocoma.split(",")
+                    print('Remates a puerta ST Local:'+separacionRematesSegunda[0])
 
-                print('Remates a puerta ST Visitante:'+separacionRematesSegunda[2])
-            if ataquespeligrososSegundaparte in x.text :
-                ataquespeligrososSegundaparteseparadosporocoma = x.text.replace("\n", ",")
-                separacionAtaquesPeligrososSegunda = ataquespeligrososSegundaparteseparadosporocoma.split(",")
-                print('Ataques peligrosos ST Local:'+separacionAtaquesPeligrososSegunda[0])
-                print('Ataques peligrosos ST Visitante:'+separacionAtaquesPeligrososSegunda[2])
-    else:
-        print("No hubo goles en el segundo tiempo")
-        update.message.reply_text("No hubo goles en el segundo tiempo")
+                    print('Remates a puerta ST Visitante:'+separacionRematesSegunda[2])
+                if ataquespeligrososSegundaparte in x.text :
+                    ataquespeligrososSegundaparteseparadosporocoma = x.text.replace("\n", ",")
+                    separacionAtaquesPeligrososSegunda = ataquespeligrososSegundaparteseparadosporocoma.split(",")
+                    print('Ataques peligrosos ST Local:'+separacionAtaquesPeligrososSegunda[0])
+                    print('Ataques peligrosos ST Visitante:'+separacionAtaquesPeligrososSegunda[2])
+        else:
+            estadisticas = driver.find_element_by_id('a-match-statistics')
+            estadisticas.click()
+            time.sleep(1)
+            #hacerle click al segundo tiempo 
+            estadisticasPrimerTiempo = driver.find_element_by_id('statistics-2-statistic')
+            estadisticasPrimerTiempo.click()
+            time.sleep(1)
+            #hay que recorrer todas las estadisticas para obtener tiros a puerta y ataques peligrosos de la segunda parte
+            bucledeinfosegundaparte=driver.find_elements_by_xpath("//div[@class='statTextGroup']")
+            bucledeinfosegundaparte1= driver.find_elements_by_xpath("//div[@class='statRow']/div[@class='statTextGroup']")
+            for x in bucledeinfosegundaparte1:
+                rematesapuertaSegundaparte = "Remates a puerta"
+                ataquespeligrososSegundaparte = "Ataques peligrosos"
+                if rematesapuertaSegundaparte in x.text:
+                    rematesapuertaSegundaparteseparadosporocoma = x.text.replace("\n", ",")
+                    separacionRematesSegunda = rematesapuertaSegundaparteseparadosporocoma.split(",")
+                    print('Remates a puerta ST Local:'+separacionRematesSegunda[0])
 
-    golesTotalesLocal=golesPrimerTiempoLocal+golesSegundoTiempoLocal
-    golesTotalesVisitante=golesPrimerTiempoVisitante+golesSegundoTiempoVisitante
-    print('Resultado Final:'+str(golesTotalesLocal)+'-'+str(golesTotalesVisitante))
-    update.message.reply_text(f'<b>📃Liga: </b>'+liga.text+'\n'+'<b>🗓 Fecha: </b>'+fecha.text+'\n'+'<b>⚽ Partido: </b>'+ equipos[0].text +' VS '+ equipos[1].text + '\n'+
-    '-------------- \n'+
-    '<b>Resultado HT: </b>'+str(golesPrimerTiempoLocal)+'-'+ str(golesPrimerTiempoVisitante)+'\n'+
-    '<b>Remates a puerta HT Local: </b>'+ separacionRemates[0]+'\n'+
-    '<b>Remates a puerta HT Visitante: </b>'+ separacionRemates[2]+'\n'+
-    '<b>Ataques Peligrosos HT Local: </b>'+ separacionAtaquesPeligrosos[0]+'\n'+
-    '<b>Ataques Peligrosos HT Visitante: </b>'+ separacionAtaquesPeligrosos[2]+'\n'+
-    '-------------- \n'+
-    '<b>Resultado ST: </b>'+str(golesSegundoTiempoLocal)+'-'+ str(golesSegundoTiempoVisitante)+'\n'+
-    '<b>Remates a puerta ST Local: </b>'+ separacionRematesSegunda[0]+'\n'+
-    '<b>Remates a puerta ST Visitante: </b>'+ separacionRematesSegunda[2]+'\n'+
-    '<b>Ataques Peligrosos ST Local: </b>'+ separacionAtaquesPeligrososSegunda[0]+'\n'+
-    '<b>Ataques Peligrosos ST Visitante: </b>'+ separacionAtaquesPeligrososSegunda[2]+'\n'+
-    '-------------- \n'+
-    '<b>RESULTADO FINAL:</b>'+str(golesTotalesLocal)+'-'+str(golesTotalesVisitante)
-    ,parse_mode='HTML')
-    # Hago el insert del partido en la BD para almacenarlo
-    fechaPartido = fecha.text;
-    fechaPartido = fechaPartido.replace(".", "-")
-    date_time_obj = datetime.strptime(fechaPartido+':00.00', '%d-%m-%Y %H:%M:%S.%f')
-    print('Date:', date_time_obj.date())
-    mycursor = mydb.cursor()
-    sql = "INSERT INTO partidos (league,event,local_team,away_team,shots_on_target_local_FH,shots_on_target_away_FH,dangerous_attack_home_FH,dangerous_attack_away_FH,result_FH,shots_on_target_local_SH,shots_on_target_away_SH,dangerous_attack_home_SH,dangerous_attack_away_SH,result_SH,result,date) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-    val = (liga.text,equipos[0].text+'-'+equipos[1].text,equipos[0].text,equipos[1].text,separacionRemates[0],separacionRemates[2],separacionAtaquesPeligrosos[0],separacionAtaquesPeligrosos[2],str(golesPrimerTiempoLocal)+'-'+str(golesPrimerTiempoVisitante)
-    ,separacionRematesSegunda[0],separacionRematesSegunda[2],separacionAtaquesPeligrososSegunda[0],separacionAtaquesPeligrososSegunda[2],str(golesSegundoTiempoLocal)+'-'+str(golesSegundoTiempoVisitante),str(golesTotalesLocal)+'-'+str(golesTotalesVisitante),date_time_obj.date())
-    mycursor.execute(sql, val)
+                    print('Remates a puerta ST Visitante:'+separacionRematesSegunda[2])
+                if ataquespeligrososSegundaparte in x.text :
+                    ataquespeligrososSegundaparteseparadosporocoma = x.text.replace("\n", ",")
+                    separacionAtaquesPeligrososSegunda = ataquespeligrososSegundaparteseparadosporocoma.split(",")
+                    print('Ataques peligrosos ST Local:'+separacionAtaquesPeligrososSegunda[0])
+                    print('Ataques peligrosos ST Visitante:'+separacionAtaquesPeligrososSegunda[2])
 
-    mydb.commit()
+        golesTotalesLocal=golesPrimerTiempoLocal+golesSegundoTiempoLocal
+        golesTotalesVisitante=golesPrimerTiempoVisitante+golesSegundoTiempoVisitante
+        print('Resultado Final:'+str(golesTotalesLocal)+'-'+str(golesTotalesVisitante))
+        update.message.reply_text(f'<b>📃Liga: </b>'+liga.text+'\n'+'<b>🗓 Fecha: </b>'+fecha.text+'\n'+'<b>⚽ Partido: </b>'+ equipos[0].text +' VS '+ equipos[1].text + '\n'+
+        '-------------- \n'+
+        '<b>Resultado HT: </b>'+str(golesPrimerTiempoLocal)+'-'+ str(golesPrimerTiempoVisitante)+'\n'+
+        '<b>Remates a puerta HT Local: </b>'+ separacionRemates[0]+'\n'+
+        '<b>Remates a puerta HT Visitante: </b>'+ separacionRemates[2]+'\n'+
+        '<b>Ataques Peligrosos HT Local: </b>'+ separacionAtaquesPeligrosos[0]+'\n'+
+        '<b>Ataques Peligrosos HT Visitante: </b>'+ separacionAtaquesPeligrosos[2]+'\n'+
+        '-------------- \n'+
+        '<b>Resultado ST: </b>'+str(golesSegundoTiempoLocal)+'-'+ str(golesSegundoTiempoVisitante)+'\n'+
+        '<b>Remates a puerta ST Local: </b>'+ separacionRematesSegunda[0]+'\n'+
+        '<b>Remates a puerta ST Visitante: </b>'+ separacionRematesSegunda[2]+'\n'+
+        '<b>Ataques Peligrosos ST Local: </b>'+ separacionAtaquesPeligrososSegunda[0]+'\n'+
+        '<b>Ataques Peligrosos ST Visitante: </b>'+ separacionAtaquesPeligrososSegunda[2]+'\n'+
+        '-------------- \n'+
+        '<b>RESULTADO FINAL:</b>'+str(golesTotalesLocal)+'-'+str(golesTotalesVisitante)
+        ,parse_mode='HTML')
+        # Hago el insert del partido en la BD para almacenarlo
+        fechaPartido = fecha.text;
+        fechaPartido = fechaPartido.replace(".", "-")
+        date_time_obj = datetime.strptime(fechaPartido+':00.00', '%d-%m-%Y %H:%M:%S.%f')
+        # print('Date:', date_time_obj.date())
+        # Primero voy a comprobar las filas que ya existen en la base de datos, para evitar añadir partidos duplicados con la misma fecha y los mismos equipos
+        # mycursor = mydb.cursor()
+        # mycursor.execute("SELECT date,event,local_team,away_team FROM partidos")
+        # myresult = mycursor.fetchall()
+        # # declaro estas variables para saber que partido voy a ingresar y comprobar si ya está en la BD
+        # fechaPartidoNow=date_time_obj.date()
+        # eventoNow=equipos[0].text+'-'+equipos[1].text
+        # home_TeamNow=equipos[0].text
+        # away_TeamNow=equipos[1].text
+        # for x in myresult:
+        #     if(x[0]==fechaPartidoNow and x[1]==eventoNow):
+        #         print("Partido registrado en la base de datos , no se añade")
+        #         driver.close()
+        #         time.sleep(3)
+        #         driver.switch_to_window(window_before)
+        #         time.sleep(5)
+        #     else:
+        #         sql = "INSERT INTO partidos (league,event,local_team,away_team,shots_on_target_local_FH,shots_on_target_away_FH,dangerous_attack_home_FH,dangerous_attack_away_FH,result_FH,shots_on_target_local_SH,shots_on_target_away_SH,dangerous_attack_home_SH,dangerous_attack_away_SH,result_SH,result,date) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        #         val = (liga.text,equipos[0].text+'-'+equipos[1].text,equipos[0].text,equipos[1].text,separacionRemates[0],separacionRemates[2],separacionAtaquesPeligrosos[0],separacionAtaquesPeligrosos[2],str(golesPrimerTiempoLocal)+'-'+str(golesPrimerTiempoVisitante)
+        #         ,separacionRematesSegunda[0],separacionRematesSegunda[2],separacionAtaquesPeligrososSegunda[0],separacionAtaquesPeligrososSegunda[2],str(golesSegundoTiempoLocal)+'-'+str(golesSegundoTiempoVisitante),str(golesTotalesLocal)+'-'+str(golesTotalesVisitante),date_time_obj.date())
+        #         mycursor.execute(sql, val)
 
-    print(mycursor.rowcount, "record inserted.")
+        #         mydb.commit()
 
+        #         print(mycursor.rowcount, "record inserted.")
+        #         driver.close()
+        #         time.sleep(3)
+        #         driver.switch_to_window(window_before)
+        #         time.sleep(5)
     
 def help(update, context):
     """Send a message when the command /help is issued."""
